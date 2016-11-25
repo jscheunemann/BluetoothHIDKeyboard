@@ -44,9 +44,6 @@
 #include "Adafruit_BluefruitLE_SPI.h"
 
 #define BUFSIZE 128
-#define BLUEFRUIT_SPI_CS 8
-#define BLUEFRUIT_SPI_IRQ 7
-#define BLUEFRUIT_SPI_RST 6
 
 #ifdef Serial1    // this makes it not complain on compilation if there's no Serial1
   #define BLUEFRUIT_HWSERIAL_NAME      Serial1
