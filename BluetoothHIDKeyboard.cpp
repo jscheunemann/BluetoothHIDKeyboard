@@ -56,7 +56,7 @@ void BluetoothHIDKeyboard::begin() {
   this->ble->begin(false);
   this->ble->echo(false);
 
-  this->ble->sendCommandCheckOK(F("AT+GAPDEVNAME==Bluefruit Keyboard"));
+  this->ble->sendCommandCheckOK(F("AT+GAPDEVNAME=Bluefruit Keyboard"));
   this->ble->sendCommandCheckOK(F("AT+BleHIDEn=On"));
 }
 
