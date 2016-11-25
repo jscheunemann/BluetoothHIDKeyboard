@@ -61,10 +61,7 @@ class Adafruit_BLE : public Adafruit_ATParser
     enum
     {
       BLUEFRUIT_TRANSPORT_INVALID,
-      BLUEFRUIT_TRANSPORT_HWUART,
-      BLUEFRUIT_TRANSPORT_SWUART,
       BLUEFRUIT_TRANSPORT_HWSPI,
-      BLUEFRUIT_TRANSPORT_SWSPI,
     };
 
 
@@ -77,14 +74,10 @@ class Adafruit_BLE : public Adafruit_ATParser
     // Constructor
     Adafruit_BLE(void);
 
-    // Physical transportation checking
-    bool isTransportHwUart (void) { return _physical_transport == BLUEFRUIT_TRANSPORT_HWUART; }
-    bool isTransportSwUart (void) { return _physical_transport == BLUEFRUIT_TRANSPORT_SWUART; }
-    bool isTransportUart   (void) { return isTransportHwUart() || isTransportSwUart();        }
+
 
     bool isTransportHwSpi  (void) { return _physical_transport == BLUEFRUIT_TRANSPORT_HWSPI;  }
-    bool isTransportSwSpi  (void) { return _physical_transport == BLUEFRUIT_TRANSPORT_SWSPI;  }
-    bool isTransportSpi    (void) { return isTransportHwSpi() || isTransportSwSpi();          }
+    bool isTransportSpi    (void) { return isTransportHwSpi();                                }
 
     // Functions implemented in this base class
     bool reset(void);
@@ -122,7 +115,6 @@ class Adafruit_BLE : public Adafruit_ATParser
     void setDisconnectCallback( void (*fp) (void) );
     void setConnectCallback   ( void (*fp) (void) );
 
-    void setBleUartRxCallback( void (*fp) (char data[], uint16_t len) );
     void setBleGattRxCallback( int32_t chars_idx, void (*fp) (int32_t, uint8_t[], uint16_t) );
 
   protected:

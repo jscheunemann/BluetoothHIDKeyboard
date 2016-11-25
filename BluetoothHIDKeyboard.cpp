@@ -36,30 +36,16 @@
 
 #include "BluetoothHIDKeyboard.h"
 
-BluetoothHIDKeyboard::BluetoothHIDKeyboard() {
-  this->deviceName = "Bluefruit Keyboard";
-}
+BluetoothHIDKeyboard::BluetoothHIDKeyboard(){}
 
-BluetoothHIDKeyboard::BluetoothHIDKeyboard(String bluetooth_device_name) {
-  this->deviceName = bluetooth_device_name;
-}
-
-BluetoothHIDKeyboard::BluetoothHIDKeyboard(int8_t csPin, int8_t irqPin, int8_t rstPin) {
-  this->deviceName = "Bluefruit Keyboard";
+BluetoothHIDKeyboard::BluetoothHIDKeyboard(byte csPin, byte irqPin, byte rstPin) {
   this->csPin = csPin;
   this->irqPin = irqPin;
   this->rstPin = rstPin;
 }
 
-BluetoothHIDKeyboard::BluetoothHIDKeyboard(String bluetooth_device_name, int8_t csPin, int8_t irqPin, int8_t rstPin) {
-  this->deviceName = bluetooth_device_name;
-  this->csPin = csPin;
-  this->irqPin = irqPin;
-  this->rstPin = rstPin;
-}
-
-void BluetoothHIDKeyboard::sendKeys(char text[]) {
-  char buffer[BUFSIZE];
+void BluetoothHIDKeyboard::sendKeys(const char* text) {
+  char buffer[BUFSIZE+1];
   sprintf(buffer, "AT+BleKeyboard=%s\\r", text);
   this->ble->println(buffer);
 }
@@ -70,25 +56,14 @@ void BluetoothHIDKeyboard::begin() {
   this->ble->begin(false);
   this->ble->echo(false);
 
-  String devNameString = "AT+GAPDEVNAME=" + this->deviceName;
-
-  this->ble->sendCommandCheckOK(devNameString.c_str());
+  this->ble->sendCommandCheckOK(F("AT+GAPDEVNAME==Bluefruit Keyboard"));
   this->ble->sendCommandCheckOK(F("AT+BleHIDEn=On"));
 }
 
-void BluetoothHIDKeyboard::begin(int8_t csPin, int8_t irqPin, int8_t rstPin) {
+void BluetoothHIDKeyboard::begin(byte csPin, byte irqPin, byte rstPin) {
   this->csPin = csPin;
   this->irqPin = irqPin;
   this->rstPin = rstPin;
 
   this->begin();
-}
-
-void BluetoothHIDKeyboard::setDeviceName(String bluetooth_device_name) {
-  this->deviceName = bluetooth_device_name;
-
-  if (this->ble) {
-    String devNameString = "AT+GAPDEVNAME=" + this->deviceName;
-    this->ble->sendCommandCheckOK(devNameString.c_str());
-  }
 }

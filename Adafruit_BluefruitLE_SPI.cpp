@@ -66,43 +66,6 @@ Adafruit_BluefruitLE_SPI::Adafruit_BluefruitLE_SPI(int8_t csPin, int8_t irqPin, 
   m_irq_pin = irqPin;
   m_rst_pin = rstPin;
 
-  m_miso_pin = m_mosi_pin = m_sck_pin = -1;
-
-  m_tx_count = 0;
-}
-
-/******************************************************************************/
-/*!
-    @brief Instantiates a new instance of the Adafruit_BluefruitLE_SPI class
-           using software SPI
-
-    @param[in]  clkPin
-                The location of the SCK/clock pin for the SPI interface
-    @param[in]  misoPin
-                The location of the MISO pin for the SPI interface
-    @param[in]  mosiPin
-                The location of the MOSI pin for the SPI interface
-    @param[in]  csPin
-                The location of the CS pin for the SPI interface
-    @param[in]  irqPin
-                The location of the HW IRQ pin (pin 2 or pin 3 on the Arduino
-                Uno). This must be a HW interrupt pin!
-    @param[in]  rstPin
-*/
-/******************************************************************************/
-Adafruit_BluefruitLE_SPI::Adafruit_BluefruitLE_SPI(int8_t clkPin, int8_t misoPin,
-    int8_t mosiPin, int8_t csPin, int8_t irqPin, int8_t rstPin) :
-    m_rx_fifo(m_rx_buffer, sizeof(m_rx_buffer), 1, true)
-{
-  _physical_transport = BLUEFRUIT_TRANSPORT_SWSPI;
-
-  m_sck_pin  = clkPin;
-  m_miso_pin = misoPin;
-  m_mosi_pin = mosiPin;
-  m_cs_pin   = csPin;
-  m_irq_pin  = irqPin;
-  m_rst_pin  = rstPin;
-
   m_tx_count = 0;
 }
 
@@ -126,15 +89,7 @@ bool Adafruit_BluefruitLE_SPI::begin(boolean v)
   pinMode(m_cs_pin, OUTPUT);
   digitalWrite(m_cs_pin, HIGH);
 
-  if (m_sck_pin == -1) {
-    // hardware SPI
-    SPI.begin();
-  } else {
-    pinMode(m_sck_pin, OUTPUT);
-    digitalWrite(m_sck_pin, LOW);
-    pinMode(m_miso_pin, INPUT);
-    pinMode(m_mosi_pin, OUTPUT);
-  }
+  SPI.begin();
 
   bool isOK;
 
@@ -159,33 +114,6 @@ bool Adafruit_BluefruitLE_SPI::begin(boolean v)
   delay(1000);
 
   return isOK;
-}
-
-/******************************************************************************/
-/*!
-    @brief  Uninitializes the SPI interface
-*/
-/******************************************************************************/
-void Adafruit_BluefruitLE_SPI::end(void)
-{
-  if (m_sck_pin == -1) {
-    SPI.end();
-  }
-}
-
-/******************************************************************************/
-/*!
-    @brief Handle direct "+++" input command from user.
-           User should use setMode instead
-*/
-/******************************************************************************/
-void Adafruit_BluefruitLE_SPI::simulateSwitchMode(void)
-{
-  _mode = 1 - _mode;
-
-  char ch = '0' + _mode;
-  m_rx_fifo.write(&ch);
-  m_rx_fifo.write_n("\r\nOK\r\n", 6);
 }
 
 /******************************************************************************/
@@ -245,8 +173,7 @@ bool Adafruit_BluefruitLE_SPI::sendPacket(uint16_t command, const uint8_t* buf, 
   if ( buf != NULL && count > 0) memcpy(msgCmd.payload, buf, count);
 
   // Starting SPI transaction
-  if (m_sck_pin == -1)
-    SPI.beginTransaction(bluefruitSPI);
+  SPI.beginTransaction(bluefruitSPI);
 
   SPI_CS_ENABLE();
 
@@ -269,8 +196,7 @@ bool Adafruit_BluefruitLE_SPI::sendPacket(uint16_t command, const uint8_t* buf, 
   }
 
   SPI_CS_DISABLE();
-  if (m_sck_pin == -1)
-    SPI.endTransaction();
+  SPI.endTransaction();
 
   return result;
 }
@@ -301,14 +227,8 @@ size_t Adafruit_BluefruitLE_SPI::write(uint8_t c)
   {
     if (m_tx_count > 0)
     {
-      // +++ command to switch mode
-      if ( memcmp(m_tx_buffer, "+++", 3) == 0)
-      {
-        simulateSwitchMode();
-      }else
-      {
-        sendPacket(SDEP_CMDTYPE_AT_WRAPPER, m_tx_buffer, m_tx_count, 0);
-      }
+
+      sendPacket(SDEP_CMDTYPE_AT_WRAPPER, m_tx_buffer, m_tx_count, 0);
       m_tx_count = 0;
     }
   }
@@ -340,13 +260,6 @@ size_t Adafruit_BluefruitLE_SPI::write(const uint8_t *buf, size_t size)
 {
   if ( _mode == BLUEFRUIT_MODE_DATA )
   {
-    if ((size >= 3) &&
-        !memcmp(buf, "+++", 3) &&
-        !(size > 3 && buf[3] != '\r' && buf[3] != '\n') )
-    {
-      simulateSwitchMode();
-    }else
-    {
       size_t remain = size;
       while(remain)
       {
@@ -358,7 +271,6 @@ size_t Adafruit_BluefruitLE_SPI::write(const uint8_t *buf, size_t size)
       }
 
       getResponse();
-    }
 
     return size;
   }
@@ -535,15 +447,14 @@ bool Adafruit_BluefruitLE_SPI::getPacket(sdepMsgResponse_t* p_response)
 {
   // Wait until IRQ is asserted, double timeout since some commands take long time to start responding
   TimeoutTimer tt(2*_timeout);
-  
+
   while ( !digitalRead(m_irq_pin) ) {
     if (tt.expired()) return false;
   }
-  
+
   sdepMsgHeader_t* p_header = &p_response->header;
 
-  if (m_sck_pin == -1)
-    SPI.beginTransaction(bluefruitSPI);
+  SPI.beginTransaction(bluefruitSPI);
   SPI_CS_ENABLE();
 
   tt.set(_timeout);
@@ -593,9 +504,9 @@ bool Adafruit_BluefruitLE_SPI::getPacket(sdepMsgResponse_t* p_response)
     {
       p_header->msg_type = spixfer(0xff);
     }
-    
+
     if ( tt.expired() ) break;
-    
+
     memset( (&p_header->msg_type)+1, 0xff, sizeof(sdepMsgHeader_t) - 1);
     spixfer((&p_header->msg_type)+1, sizeof(sdepMsgHeader_t) - 1);
 
@@ -624,8 +535,7 @@ bool Adafruit_BluefruitLE_SPI::getPacket(sdepMsgResponse_t* p_response)
   }while(0);
 
   SPI_CS_DISABLE();
-  if (m_sck_pin == -1)
-    SPI.endTransaction();
+  SPI.endTransaction();
 
   return result;
 }
@@ -650,23 +560,10 @@ void Adafruit_BluefruitLE_SPI::spixfer(void *buff, size_t len) {
 */
 /******************************************************************************/
 uint8_t Adafruit_BluefruitLE_SPI::spixfer(uint8_t x) {
-  if (m_sck_pin == -1) {
-    uint8_t reply = SPI.transfer(x);
-    //SerialDebug.println(reply, HEX);
-    return reply;
-  }
+  uint8_t reply = SPI.transfer(x);
+  //SerialDebug.println(reply, HEX);
+  return reply;
 
-  // software spi
-  uint8_t reply = 0;
-  for (int i=7; i>=0; i--) {
-    reply <<= 1;
-    digitalWrite(m_sck_pin, LOW);
-    digitalWrite(m_mosi_pin, x & (1<<i));
-    digitalWrite(m_sck_pin, HIGH);
-    if (digitalRead(m_miso_pin))
-      reply |= 1;
-  }
-  digitalWrite(m_sck_pin, LOW);
   //SerialDebug.println(reply, HEX);
   return reply;
 }

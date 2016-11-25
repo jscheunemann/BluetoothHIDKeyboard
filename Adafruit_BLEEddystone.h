@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
-    @file     BluetoothHIDKeyboard.h
-    @author   Jason Scheunemann <jason.scheunemann@gmail.com>
+    @file     Adafruit_BLEEddystone.h
+    @author   hathach
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2016, Jason Scheunemann
+    Copyright (c) 2016, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -34,31 +34,32 @@
 */
 /**************************************************************************/
 
-#ifndef BluetoothHIDKeyboard_h
-#define BluetoothHIDKeyboard_h
+#ifndef _ADAFRUIT_BLEEDDYSTONE_H_
+#define _ADAFRUIT_BLEEDDYSTONE_H_
 
 #include <Arduino.h>
-#include <Adafruit_BluefruitLE_SPI.h>
+#include "Adafruit_BLE.h"
 
-#define BUFSIZE 127
+#define EDDYSTONE_DEFAULT_RSSI0M              (-18)
 
-#ifdef Serial1    // this makes it not complain on compilation if there's no Serial1
-  #define BLUEFRUIT_HWSERIAL_NAME      Serial1
-#endif
+class Adafruit_BLEEddystone
+{
+private:
+  Adafruit_BLE& _ble;
 
-class BluetoothHIDKeyboard {
-  public:
-    BluetoothHIDKeyboard();
-    BluetoothHIDKeyboard(byte csPin, byte irqPin, byte rstPin);
-    void BluetoothHIDKeyboard::begin();
-    void BluetoothHIDKeyboard::begin(byte csPin, byte irqPin, byte rstPin);
-    void BluetoothHIDKeyboard::sendKeys(const char* text);
+public:
+  Adafruit_BLEEddystone(Adafruit_BLE& ble);
 
-  private:
-    Adafruit_BluefruitLE_SPI* ble;
-    byte csPin = 8;
-    byte irqPin = 7;
-    byte rstPin = 6;
+  bool begin(bool reset = true);
+  bool stop (bool reset = true);
+
+  bool setURL(const char* url, bool broadcastEvenConnect = false, int8_t rssi_at_0m = EDDYSTONE_DEFAULT_RSSI0M);
+
+  bool startBroadcast(void);
+  bool stopBroadcast(void);
+
+  bool startConfigMode(uint32_t seconds);
+
 };
 
-#endif
+#endif /* _ADAFRUIT_BLEEDDYSTONE_H_ */

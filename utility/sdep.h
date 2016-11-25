@@ -99,7 +99,7 @@ typedef struct ATTR_PACKED {
     SDEP command message
 */
 /******************************************************************************/
-typedef struct ATTR_PACKED 
+typedef struct ATTR_PACKED
 {
   sdepMsgHeader_t header;
   uint8_t payload[SDEP_MAX_PACKETSIZE];

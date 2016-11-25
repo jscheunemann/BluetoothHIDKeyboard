@@ -42,12 +42,6 @@
 enum {
   EVENT_SYSTEM_CONNECT     = 0,
   EVENT_SYSTEM_DISCONNECT  = 1,
-
-  EVENT_SYSTEM_BLE_UART_RX = 8,
-  // 9 reserved
-
-  EVENT_SYSTEM_BLE_MIDI_RX = 10,
-  //  11 reserved
 };
 
 enum {
