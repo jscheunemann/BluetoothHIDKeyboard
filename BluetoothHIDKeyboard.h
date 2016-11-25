@@ -52,13 +52,17 @@
 class BluetoothHIDKeyboard {
   public:
     BluetoothHIDKeyboard();
+    BluetoothHIDKeyboard(char bluetooth_device_name[]);
     BluetoothHIDKeyboard(int8_t csPin, int8_t irqPin, int8_t rstPin);
+    BluetoothHIDKeyboard(char bluetooth_device_name[], int8_t csPin, int8_t irqPin, int8_t rstPin);
     void BluetoothHIDKeyboard::sendKeys(char text[]);
     void BluetoothHIDKeyboard::begin();
     void BluetoothHIDKeyboard::begin(int8_t csPin, int8_t irqPin, int8_t rstPin);
 
   private:
+    void BluetoothHIDKeyboard::setDeviceName(char bluetooth_device_name[]);
     Adafruit_BluefruitLE_SPI* ble;
+    String deviceName;
     int8_t csPin = 8;
     int8_t irqPin = 7;
     int8_t rstPin = 6;
