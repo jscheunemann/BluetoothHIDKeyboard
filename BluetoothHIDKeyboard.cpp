@@ -86,4 +86,9 @@ void BluetoothHIDKeyboard::begin(int8_t csPin, int8_t irqPin, int8_t rstPin) {
 
 void BluetoothHIDKeyboard::setDeviceName(String bluetooth_device_name) {
   this->deviceName = bluetooth_device_name;
+
+  if (this->ble) {
+    String devNameString = "AT+GAPDEVNAME=" + this->deviceName;
+    this->ble->sendCommandCheckOK(devNameString.c_str());
+  }
 }
