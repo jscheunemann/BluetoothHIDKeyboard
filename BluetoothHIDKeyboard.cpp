@@ -40,7 +40,7 @@ BluetoothHIDKeyboard::BluetoothHIDKeyboard() {
   this->deviceName = "Bluefruit Keyboard";
 }
 
-BluetoothHIDKeyboard::BluetoothHIDKeyboard(char bluetooth_device_name[]) {
+BluetoothHIDKeyboard::BluetoothHIDKeyboard(String bluetooth_device_name) {
   this->deviceName = bluetooth_device_name;
 }
 
@@ -51,7 +51,7 @@ BluetoothHIDKeyboard::BluetoothHIDKeyboard(int8_t csPin, int8_t irqPin, int8_t r
   this->rstPin = rstPin;
 }
 
-BluetoothHIDKeyboard::BluetoothHIDKeyboard(char bluetooth_device_name[], int8_t csPin, int8_t irqPin, int8_t rstPin) {
+BluetoothHIDKeyboard::BluetoothHIDKeyboard(String bluetooth_device_name, int8_t csPin, int8_t irqPin, int8_t rstPin) {
   this->deviceName = bluetooth_device_name;
   this->csPin = csPin;
   this->irqPin = irqPin;
@@ -82,4 +82,8 @@ void BluetoothHIDKeyboard::begin(int8_t csPin, int8_t irqPin, int8_t rstPin) {
   this->rstPin = rstPin;
 
   this->begin();
+}
+
+void BluetoothHIDKeyboard::setDeviceName(String bluetooth_device_name) {
+  this->deviceName = bluetooth_device_name;
 }

@@ -9,3 +9,4 @@ BluetoothHIDKeyboard	KEYWORD1
 #######################################
 sendKeys	KEYWORD2
 begin	KEYWORD2
+setDeviceName KEYWORD2
